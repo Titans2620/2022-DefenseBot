@@ -4,7 +4,14 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -15,20 +22,27 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * project.
  */
 public class Robot extends TimedRobot {
-  private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
-  private String m_autoSelected;
-  private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
+  WPI_TalonSRX topLeftDrive = new WPI_TalonSRX(1);
+  WPI_TalonSRX topRightDrive = new WPI_TalonSRX(2);
+  WPI_TalonSRX bottomLefttDrive = new WPI_TalonSRX(3);
+  WPI_TalonSRX bottomRightDrive = new WPI_TalonSRX(4);
+
+  Joystick controller = new Joystick(0);
+
+  MotorControllerGroup leftDrive = new MotorControllerGroup(topLeftDrive, bottomLefttDrive);
+  MotorControllerGroup rightDrive = new MotorControllerGroup(topRightDrive, bottomRightDrive);
+
+  DifferentialDrive drive = new DifferentialDrive(leftDrive, rightDrive);
+
+  Servo leftServo = new Servo(0);
+  Servo rightServo = new Servo(1);
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
   @Override
   public void robotInit() {
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
-    SmartDashboard.putData("Auto choices", m_chooser);
   }
 
   /**
@@ -53,23 +67,12 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    m_autoSelected = m_chooser.getSelected();
-    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
-    System.out.println("Auto selected: " + m_autoSelected);
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    switch (m_autoSelected) {
-      case kCustomAuto:
-        // Put custom auto code here
-        break;
-      case kDefaultAuto:
-      default:
-        // Put default auto code here
-        break;
-    }
+
   }
 
   /** This function is called once when teleop is enabled. */
@@ -78,7 +81,20 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+      drive.arcadeDrive(controller.getRawAxis(0), controller.getRawAxis(2));
+
+      if(controller.getRawButton(1)){
+          leftServo.setAngle(150);
+          rightServo.setAngle(150);
+      
+      }
+      else{
+        leftServo.setAngle(210);
+        rightServo.setAngle(210);
+      }
+
+  }
 
   /** This function is called once when the robot is disabled. */
   @Override
